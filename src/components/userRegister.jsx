@@ -2,23 +2,16 @@ import { ErrorMessage, useFormik } from "formik";
 import { registerSchema } from "../schemas";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "../store/user-slice";
-import { useState } from "react";
 
 const RegisterForm = () => {
     const dispatch = useDispatch();
     const {isLoading, error} =  useSelector((state)=>state.auth)
-    const [submitting, setSubmitting] = useState();
     // const navigate = useNavigate();
 
     const onSubmit = (values) => {
-
-        dispatch(registerUser(values))
-            .unwrap()
-            .catch((err) => {
-                setErrorMessage({ server: err.message || 'Registration failed' });
-            })
-            .finally(() => setSubmitting(false));
-    }
+        
+        dispatch(registerUser(values));
+    };
 
     const { values, errors, touched, handleChange, handleSubmit } = useFormik({
         initialValues: {
