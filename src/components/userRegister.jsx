@@ -1,16 +1,36 @@
-import { ErrorMessage, useFormik } from "formik";
+import { useFormik } from "formik";
 import { registerSchema } from "../schemas";
 import { useDispatch, useSelector } from "react-redux";
-import { registerUser } from "../store/user-slice";
+import { registerUser } from "../features/auth/auth-action";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const RegisterForm = () => {
     const dispatch = useDispatch();
-    const {isLoading, error} =  useSelector((state)=>state.auth)
-    // const navigate = useNavigate();
+    const [errorMessage, setErrorMessage] = useState(null);
+    const { loading, userInfo, success } = useSelector((state) => state.auth)
+    const navigate = useNavigate();
 
-    const onSubmit = (values) => {
-        
-        dispatch(registerUser(values));
+    useEffect(() => {
+        if (success) navigate('/login')
+        if (userInfo) navigate('/')
+    }, [navigate, userInfo, success])
+
+    const onSubmit = async (values) => {
+        try {
+            const response = await dispatch(registerUser(values));
+           
+            if(response.payload.success){
+                setErrorMessage(null)
+                navigate("/login");
+            }else{
+                setErrorMessage(response.payload.message)
+                console.log(response)
+            }
+        } catch (error) {
+            errorMessage(error.message)
+            console.error("An error occurred:", error.message);
+        }
     };
 
     const { values, errors, touched, handleChange, handleSubmit } = useFormik({
@@ -27,7 +47,7 @@ const RegisterForm = () => {
     return (
 
         <form className="justify-center" onSubmit={handleSubmit} autoComplete="off">
-            {error ? <ErrorMessage name={error} /> : null}
+            <p className="text-red-500">{errorMessage}</p>
             <label htmlFor="email">Name</label>
             <input
                 value={values.name}
@@ -64,7 +84,7 @@ const RegisterForm = () => {
                 placeholder="Confirm your password"
                 className={errors.c_password && touched ? "border-red-500" : ""}
             />
-            <button type="submit" disabled={isLoading} className="w-20">
+            <button type="submit" disabled={loading} className="w-20">
                 Register
             </button>
         </form>
